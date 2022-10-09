@@ -46,8 +46,8 @@ class DCRNNSupervisor:
         self._logger.info("Model created")
 
         self._epoch_num = self._train_kwargs.get('epoch', 0)
-        if self._epoch_num > 0:
-            self.load_model()
+        # if self._epoch_num > 0:
+        #     self.load_model()
 
     @staticmethod
     def _get_log_dir(kwargs):
