@@ -110,7 +110,21 @@ class DCRNNSupervisor:
         kwargs.update(self._train_kwargs)
         return self._train(**kwargs)
 
-    def evaluate(self, dataset='val', batches_seen=0):
+    def trace_handler(p):
+        output = p.key_averages().table(sort_by="self_cpu_time_total")
+        print(output)
+        import pathlib
+        timeline_dir = str(pathlib.Path.cwd()) + '/timeline/'
+        if not os.path.exists(timeline_dir):
+            try:
+                os.makedirs(timeline_dir)
+            except:
+                pass
+        timeline_file = timeline_dir + 'timeline-' + str(torch.backends.quantized.engine) + '-' + \
+                    'DCRNN-' + str(p.step_num) + '-' + str(os.getpid()) + '.json'
+        p.export_chrome_trace(timeline_file)
+
+    def evaluate(self, dataset='val', batches_seen=0, args=None):
         """
         Computes mean L1Loss
         :return: mean L1Loss
@@ -124,16 +138,68 @@ class DCRNNSupervisor:
             y_truths = []
             y_preds = []
 
-            for _, (x, y) in enumerate(val_iterator):
-                x, y = self._prepare_data(x, y)
+            # model
+            if args.channels_last:
+                self.dcrnn_model = self.dcrnn_model.to(memory_format=torch.channels_last)
+                print("---- Use CL model")
 
-                output = self.dcrnn_model(x)
-                loss = self._compute_loss(y, output)
-                losses.append(loss.item())
+            total_time = 0.0
+            total_sample = 0
+            if args.profile:
+                profile_iter = int(args.num_iter/2) if args.num_iter > 0 else int(len(val_iterator)/2)
+                with torch.profiler.profile(
+                    activities=[torch.profiler.ProfilerActivity.CPU],
+                    record_shapes=True,
+                    schedule=torch.profiler.schedule(
+                        wait=profile_iter,
+                        warmup=2,
+                        active=1,
+                    ),
+                    on_trace_ready=self.trace_handler,
+                ) as p:
+                    for i, (x, y) in enumerate(val_iterator):
+                        if args.num_iter > 0 and i >= args.num_iter: break
 
-                y_truths.append(y.cpu())
-                y_preds.append(output.cpu())
+                        x, y = self._prepare_data(x, y)
 
+                        tic =  time.time()
+                        output = self.dcrnn_model(x)
+                        p.step()
+                        toc =  time.time()
+                        elapsed = toc - tic
+                        print("Iteration: {}, inference time: {} sec.".format(i, elapsed), flush=True)
+                        if i >= args.num_warmup:
+                            total_time += elapsed
+                            total_sample += self._kwargs['data'].get('test_batch_size')
+
+                        loss = self._compute_loss(y, output)
+                        losses.append(loss.item())
+
+                        y_truths.append(y.cpu())
+                        y_preds.append(output.cpu())
+            else:
+                for i, (x, y) in enumerate(val_iterator):
+                    if args.num_iter > 0 and i >= args.num_iter: break
+
+                    x, y = self._prepare_data(x, y)
+
+                    tic =  time.time()
+                    output = self.dcrnn_model(x)
+                    toc =  time.time()
+                    elapsed = toc - tic
+                    print("Iteration: {}, inference time: {} sec.".format(i, elapsed), flush=True)
+                    if i >= args.num_warmup:
+                        total_time += elapsed
+                        total_sample += self._kwargs['data'].get('test_batch_size')
+
+                    loss = self._compute_loss(y, output)
+                    losses.append(loss.item())
+
+                    y_truths.append(y.cpu())
+                    y_preds.append(output.cpu())
+
+            throughput = total_sample / total_time
+            print("inference Throughput: {:.3f} samples/s".format(throughput))
             mean_loss = np.mean(losses)
 
             self._writer.add_scalar('{} loss'.format(dataset), mean_loss, batches_seen)
