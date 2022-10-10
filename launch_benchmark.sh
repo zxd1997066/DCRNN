@@ -139,7 +139,7 @@ function collect_perf_logs {
     if [ "$BUILD_URL" != "" ];then
         link="${BUILD_URL}artifact/$(basename ${log_dir})"
     else
-        link="$(basename ${log_dir})"
+        link="${log_dir}"
     fi
     printf "${framework},${model_name},${mode_name},${precision},${batch_size}," |tee -a ${WORKSPACE}/summary.log
     printf "${cores_per_instance},${throughput[0]},${throughput[1]},${link},${device}\n" |tee -a ${WORKSPACE}/summary.log
