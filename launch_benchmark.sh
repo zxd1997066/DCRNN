@@ -254,7 +254,8 @@ function init_params {
     profile=0
     dnnl_verbose=0
     channels_last=1
-    OOB_ADDITION_PARAMS=""
+    # addtion args for exec
+    addtion_options=" ${OOB_ADDITION_PARAMS} "
     #
     for var in $@
     do
@@ -299,12 +300,10 @@ function init_params {
                 channels_last=$(echo $var |cut -f2 -d=)
             ;;
             *)
-                OOB_ADDITION_PARAMS+=" $var "
+                addtion_options+=" $var "
             ;;
         esac
     done
-    # addtion args for exec
-    addtion_options=" ${OOB_ADDITION_PARAMS} "
     # Profile
     if [ "${profile}" == "1" ];then
         addtion_options+=" --profile "
