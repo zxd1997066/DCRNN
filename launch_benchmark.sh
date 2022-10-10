@@ -51,8 +51,10 @@ function main {
     do
         # cache
         python run_demo_pytorch.py --config_filename=data/model/pretrained/METR-LA/config.yaml \
-                --batch_size 1 --num_iter 3 --num_warmup 1 \
-                --channels_last $channels_last --precision $precision
+            --batch_size 1 --num_iter 3 --num_warmup 1 \
+            --channels_last $channels_last --precision $precision \
+            ${addtion_options}
+        #
         for batch_size in ${batch_size_list[@]}
         do
             logs_path_clean

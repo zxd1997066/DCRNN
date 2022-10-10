@@ -12,6 +12,7 @@ from model.pytorch.dcrnn_supervisor import DCRNNSupervisor
 def run_dcrnn(args):
     with open(args.config_filename) as f:
         supervisor_config = yaml.safe_load(f)
+        supervisor_config['data']['dataset_dir'] = args.dataset_dir
         supervisor_config['data']['test_batch_size'] = args.batch_size
 
         graph_pkl_filename = supervisor_config['data'].get('graph_pkl_filename')
@@ -45,6 +46,7 @@ if __name__ == '__main__':
     parser.add_argument('--profile', action='store_true', default=False, help='collect timeline')
     parser.add_argument('--num_iter', default=-1, type=int, help='test iterations')
     parser.add_argument('--num_warmup', default=-1, type=int, help='test warmup')
+    parser.add_argument('--dataset_dir', default='data/METR-LA', type=str, help='data location')
 
     args = parser.parse_args()
     run_dcrnn(args)
