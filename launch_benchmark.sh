@@ -42,6 +42,15 @@ function main {
     fetch_cpu_info
     set_environment
 
+    # requirements
+    if [ "${DATASET_DIR}" == "" ];then
+        set +x
+        echo "[ERROR] Please set DATASET_DIR before launch"
+        echo "  export DATASET_DIR=/path/to/dataset/dir"
+        exit 1
+        set -x
+    fi
+
     # if multiple use 'xxx,xxx,xxx'
     model_name_list=($(echo "${model_name}" |sed 's/,/ /g'))
     batch_size_list=($(echo "${batch_size}" |sed 's/,/ /g'))
@@ -50,7 +59,8 @@ function main {
     for model_name in ${model_name_list[@]}
     do
         # cache
-        python run_demo_pytorch.py --config_filename=data/model/pretrained/METR-LA/config.yaml \
+        python run_demo_pytorch.py --dataset_dir ${DATASET_DIR} \
+            --config_filename=data/model/pretrained/METR-LA/config.yaml \
             --batch_size 1 --num_iter 3 --num_warmup 1 \
             --channels_last $channels_last --precision $precision \
             ${addtion_options}
@@ -79,7 +89,8 @@ function generate_core {
 
         printf " numactl -m $(echo ${cpu_array[i]} |awk -F ';' '{print $2}') \
                     -C $(echo ${cpu_array[i]} |awk -F ';' '{print $1}') \
-            python run_demo_pytorch.py --config_filename=data/model/pretrained/METR-LA/config.yaml \
+            python run_demo_pytorch.py --dataset_dir ${DATASET_DIR} \
+                --config_filename=data/model/pretrained/METR-LA/config.yaml \
                 --batch_size $batch_size --num_iter $num_iter --num_warmup $num_warmup \
                 --channels_last $channels_last --precision $precision \
                 ${addtion_options} \
@@ -109,7 +120,8 @@ function generate_core_launcher {
                     --log_path ${log_dir} \
                     --ninstances ${#cpu_array[@]} \
                     --ncore_per_instance ${real_cores_per_instance} \
-            run_demo_pytorch.py --config_filename=data/model/pretrained/METR-LA/config.yaml \
+            run_demo_pytorch.py --dataset_dir ${DATASET_DIR} \
+                --config_filename=data/model/pretrained/METR-LA/config.yaml \
                 --batch_size $batch_size --num_iter $num_iter --num_warmup $num_warmup \
                 --channels_last $channels_last --precision $precision \
                 ${addtion_options} \
