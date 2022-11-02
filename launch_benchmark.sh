@@ -70,7 +70,7 @@ function generate_core {
             OOB_EXEC_HEADER=" CUDA_VISIBLE_DEVICES=${device_array[i]} "
         fi
         printf " ${OOB_EXEC_HEADER} \
-            run_demo_pytorch.py --dataset_dir ${DATASET_DIR} \
+            python run_demo_pytorch.py --dataset_dir ${DATASET_DIR} \
                 --config_filename=data/model/pretrained/METR-LA/config.yaml \
                 --batch_size $batch_size --num_iter $num_iter --num_warmup $num_warmup \
                 --channels_last $channels_last --precision $precision \
@@ -96,9 +96,9 @@ function generate_core_launcher {
                     --log_path ${log_dir} \
                     --ninstances ${#device_array[@]} \
                     --ncore_per_instance ${real_cores_per_instance} \
-            tools/infer.py --device cpu --weights $CKPT_DIR \
-                --source $DATASET_DIR \
-                --num_iter $num_iter --num_warmup $num_warmup \
+            run_demo_pytorch.py --dataset_dir ${DATASET_DIR} \
+                --config_filename=data/model/pretrained/METR-LA/config.yaml \
+                --batch_size $batch_size --num_iter $num_iter --num_warmup $num_warmup \
                 --channels_last $channels_last --precision $precision \
                 ${addtion_options} \
         > /dev/null 2>&1 &  \n" |tee -a ${excute_cmd_file}
