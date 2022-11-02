@@ -38,7 +38,7 @@ if __name__ == '__main__':
                         help='Config file for pretrained model.')
     parser.add_argument('--output_filename', default='data/dcrnn_predictions.npz')
     # extra
-    parser.add_argument('--device', default="cpu", type=str, help='cpu, cuda or xpu')
+    # parser.add_argument('--device', default="cpu", type=str, help='cpu, cuda or xpu')
     parser.add_argument('--batch_size', default=1, type=int, help='batch size')
     parser.add_argument('--precision', default="float32", type=str, help='precision')
     parser.add_argument('--channels_last', default=1, type=int, help='Use NHWC or not')
