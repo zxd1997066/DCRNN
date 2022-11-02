@@ -19,7 +19,13 @@ def run_dcrnn(args):
         sensor_ids, sensor_id_to_ind, adj_mx = load_graph_data(graph_pkl_filename)
 
         if args.precision == "bfloat16":
+            print("---- Use cpu AMP to bf16")
             with torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16):
+                supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
+                mean_score, outputs = supervisor.evaluate('test', args=args)
+        elif args.precision == "float16":
+            print("---- Use cuda AMP to fp16")
+            with torch.cuda.amp.autocast(enabled=True, dtype=torch.float16):
                 supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
                 mean_score, outputs = supervisor.evaluate('test', args=args)
         else:
