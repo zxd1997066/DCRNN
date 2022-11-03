@@ -23,7 +23,7 @@ class DCRNNSupervisor:
 
         # logging.
         self._log_dir = self._get_log_dir(kwargs)
-        self._writer = SummaryWriter('runs/' + self._log_dir)
+        # self._writer = SummaryWriter('runs/' + self._log_dir)
 
         log_level = self._kwargs.get('log_level', 'INFO')
         self._logger = utils.get_logger(self._log_dir, __name__, 'info.log', level=log_level)
@@ -110,7 +110,7 @@ class DCRNNSupervisor:
         kwargs.update(self._train_kwargs)
         return self._train(**kwargs)
 
-    def trace_handler(p):
+    def trace_handler(self, p):
         output = p.key_averages().table(sort_by="self_cpu_time_total")
         print(output)
         import pathlib
@@ -146,9 +146,10 @@ class DCRNNSupervisor:
             total_time = 0.0
             total_sample = 0
             if args.profile:
+                prof_act = [torch.profiler.ProfilerActivity.CUDA, torch.profiler.ProfilerActivity.CPU]
                 profile_iter = int(args.num_iter/2) if args.num_iter > 0 else int(len(val_iterator)/2)
                 with torch.profiler.profile(
-                    activities=[torch.profiler.ProfilerActivity.CPU],
+                    activities=prof_act,
                     record_shapes=True,
                     schedule=torch.profiler.schedule(
                         wait=profile_iter,
@@ -202,7 +203,7 @@ class DCRNNSupervisor:
             print("inference Throughput: {:.3f} samples/s".format(throughput))
             mean_loss = np.mean(losses)
 
-            self._writer.add_scalar('{} loss'.format(dataset), mean_loss, batches_seen)
+            # self._writer.add_scalar('{} loss'.format(dataset), mean_loss, batches_seen)
 
             y_preds = np.concatenate(y_preds, axis=1)
             y_truths = np.concatenate(y_truths, axis=1)  # concatenate on batch dimension
@@ -277,9 +278,7 @@ class DCRNNSupervisor:
 
             end_time = time.time()
 
-            self._writer.add_scalar('training loss',
-                                    np.mean(losses),
-                                    batches_seen)
+            # self._writer.add_scalar('training loss', np.mean(losses), batches_seen)
 
             if (epoch_num % log_every) == log_every - 1:
                 message = 'Epoch [{}/{}] ({}) train_mae: {:.4f}, val_mae: {:.4f}, lr: {:.6f}, ' \
