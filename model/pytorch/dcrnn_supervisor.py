@@ -201,8 +201,11 @@ class DCRNNSupervisor:
                     y_truths.append(y.cpu())
                     y_preds.append(output.cpu())
 
+            print("\n", "-"*20, "Summary", "-"*20)
+            latency = total_time / total_sample * 1000
             throughput = total_sample / total_time
-            print("inference Throughput: {:.3f} samples/s".format(throughput))
+            print("inference Latency: {} ms".format(latency))
+            print("inference Throughput: {} samples/s".format(throughput))
             mean_loss = np.mean(losses)
 
             # self._writer.add_scalar('{} loss'.format(dataset), mean_loss, batches_seen)
