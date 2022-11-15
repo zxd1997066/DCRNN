@@ -165,6 +165,7 @@ class DCRNNSupervisor:
 
                         tic =  time.time()
                         output = self.dcrnn_model(x)
+                        if torch.cuda.is_available(): torch.cuda.synchronize()
                         p.step()
                         toc =  time.time()
                         elapsed = toc - tic
@@ -186,6 +187,7 @@ class DCRNNSupervisor:
 
                     tic =  time.time()
                     output = self.dcrnn_model(x)
+                    if torch.cuda.is_available(): torch.cuda.synchronize()
                     toc =  time.time()
                     elapsed = toc - tic
                     print("Iteration: {}, inference time: {} sec.".format(i, elapsed), flush=True)
