@@ -25,7 +25,7 @@ def run_dcrnn(args):
                 mean_score, outputs = supervisor.evaluate('test', args=args)
         elif args.precision == "float16":
             print("---- Use cuda AMP to fp16")
-            with torch.cpu.amp.autocast(enabled=True, dtype=torch.half):
+            with torch.cuda.amp.autocast(enabled=True, dtype=torch.half):
                 supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
                 mean_score, outputs = supervisor.evaluate('test', args=args)
         else:
