@@ -143,6 +143,9 @@ class DCRNNSupervisor:
                 self.dcrnn_model = self.dcrnn_model.to(memory_format=torch.channels_last)
                 print("---- Use CL model")
 
+            if args.compile:
+                self.dcrnn_model = torch.compile(self.dcrnn_model, backend=args.backend, options={"freezing": True})
+
             total_time = 0.0
             total_sample = 0
             if args.profile:
