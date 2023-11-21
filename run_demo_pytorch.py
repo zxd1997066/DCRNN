@@ -53,6 +53,10 @@ if __name__ == '__main__':
     parser.add_argument('--num_iter', default=-1, type=int, help='test iterations')
     parser.add_argument('--num_warmup', default=-1, type=int, help='test warmup')
     parser.add_argument('--dataset_dir', default='data/METR-LA', type=str, help='data location')
+    parser.add_argument("--compile", action='store_true', default=False,
+                    help="enable torch.compile")
+    parser.add_argument("--backend", type=str, default='inductor',
+                    help="enable torch.compile backend")
 
     args = parser.parse_args()
     run_dcrnn(args)
