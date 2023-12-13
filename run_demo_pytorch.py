@@ -24,10 +24,15 @@ def run_dcrnn(args):
                 supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
                 mean_score, outputs = supervisor.evaluate('test', args=args)
         elif args.precision == "float16":
-            print("---- Use cuda AMP to fp16")
-            with torch.cpu.amp.autocast(enabled=True, dtype=torch.half):
-                supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
-                mean_score, outputs = supervisor.evaluate('test', args=args)
+            print("---- Use AMP to fp16")
+            if args.device == "cpu":
+                with torch.cpu.amp.autocast(enabled=True, dtype=torch.half):
+                    supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
+                    mean_score, outputs = supervisor.evaluate('test', args=args)
+            elif args.device == "cuda":
+                with torch.cuda.amp.autocast(enabled=True, dtype=torch.half):
+                    supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
+                    mean_score, outputs = supervisor.evaluate('test', args=args)
         else:
             supervisor = DCRNNSupervisor(adj_mx=adj_mx, **supervisor_config)
             mean_score, outputs = supervisor.evaluate('test', args=args)
@@ -44,7 +49,7 @@ if __name__ == '__main__':
                         help='Config file for pretrained model.')
     parser.add_argument('--output_filename', default='data/dcrnn_predictions.npz')
     # extra
-    # parser.add_argument('--device', default="cpu", type=str, help='cpu, cuda or xpu')
+    parser.add_argument('--device', default="cpu", type=str, help='cpu, cuda or xpu')
     parser.add_argument('--batch_size', default=1, type=int, help='batch size')
     parser.add_argument('--precision', default="float32", type=str, help='precision')
     parser.add_argument('--channels_last', default=1, type=int, help='Use NHWC or not')
