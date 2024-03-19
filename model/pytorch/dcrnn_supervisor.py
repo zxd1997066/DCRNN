@@ -213,8 +213,8 @@ class DCRNNSupervisor:
 
             # self._writer.add_scalar('{} loss'.format(dataset), mean_loss, batches_seen)
 
-            y_preds = np.concatenate(y_preds)
-            y_truths = np.concatenate(y_truths)  # concatenate on batch dimension
+            y_preds = np.concatenate(y_preds, dim=1)
+            y_truths = np.concatenate(y_truths, dim=1)  # concatenate on batch dimension
 
             y_truths_scaled = []
             y_preds_scaled = []
