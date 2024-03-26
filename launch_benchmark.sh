@@ -71,6 +71,7 @@ function generate_core {
             OOB_EXEC_HEADER+=" -C $(echo ${device_array[i]} |awk -F ';' '{print $1}') "
         else
             OOB_EXEC_HEADER=" CUDA_VISIBLE_DEVICES=${device_array[i]} "
+            addtion_options=" ${addtion_options} --device cuda "
         fi
         printf " ${OOB_EXEC_HEADER} \
             python run_demo_pytorch.py --dataset_dir ${DATASET_DIR} \
