@@ -17,7 +17,10 @@ def run_dcrnn(args):
 
         graph_pkl_filename = supervisor_config['data'].get('graph_pkl_filename')
         sensor_ids, sensor_id_to_ind, adj_mx = load_graph_data(graph_pkl_filename)
-
+        if args.triton_cpu:
+            print("run with triton cpu backend")
+            import torch._inductor.config
+            torch._inductor.config.cpu_backend="triton"
         if args.precision == "bfloat16":
             print("---- Use cpu AMP to bf16")
             with torch.cpu.amp.autocast(enabled=True, dtype=torch.bfloat16):
@@ -62,6 +65,7 @@ if __name__ == '__main__':
                     help="enable torch.compile")
     parser.add_argument("--backend", type=str, default='inductor',
                     help="enable torch.compile backend")
-
+    parser.add_argument("--triton_cpu", action='store_true', default=False,
+                    help="enable triton_cpu")
     args = parser.parse_args()
     run_dcrnn(args)
