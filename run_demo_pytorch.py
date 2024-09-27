@@ -10,6 +10,7 @@ from model.pytorch.dcrnn_supervisor import DCRNNSupervisor
 
 
 def run_dcrnn(args):
+    import torch
     with open(args.config_filename) as f:
         supervisor_config = yaml.safe_load(f)
         supervisor_config['data']['dataset_dir'] = args.dataset_dir
